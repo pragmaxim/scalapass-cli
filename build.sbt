@@ -4,7 +4,13 @@ ThisBuild / organization     := "com.pragmaxim"
 ThisBuild / organizationName := "pragmaxim"
 
 lazy val root = (project in file("."))
-  .enablePlugins(NativeImagePlugin)
+  .settings(
+    assembly / assemblyOutputPath := file(s"bin/${name.value}_3-${version.value}.jar"),
+    assembly / assemblyMergeStrategy := {
+      case PathList("META-INF", xs @ _*) => MergeStrategy.discard
+      case x => MergeStrategy.first
+    }
+  )
   .settings(
     name := "scalapass-cli",
     libraryDependencies ++= Seq(
