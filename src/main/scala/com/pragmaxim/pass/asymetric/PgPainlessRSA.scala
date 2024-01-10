@@ -4,10 +4,7 @@ import com.pragmaxim.pass
 import com.pragmaxim.pass.*
 import com.pragmaxim.pass.KeyRing.GpgId
 import com.pragmaxim.pass.RSA.{PassPath, Password}
-import org.eclipse.jgit.api.CommitCommand
-import org.eclipse.jgit.gpg.bc.internal.BouncyCastleGpgSigner
-import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
-import zio.{IO, Task, ZIO}
+import zio.{Task, ZIO}
 
 import java.io.*
 

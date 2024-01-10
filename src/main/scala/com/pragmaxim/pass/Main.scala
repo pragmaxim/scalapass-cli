@@ -1,8 +1,6 @@
 package com.pragmaxim.pass
 
 import com.pragmaxim.pass.Cli.Subcommand
-import com.pragmaxim.pass.KeyRing.GpgId
-import com.pragmaxim.pass.RSA.PgpType
 import zio.*
 import zio.cli.HelpDoc.Span.{spans, strong, text}
 import zio.cli.{CliApp, ZIOCliDefault}

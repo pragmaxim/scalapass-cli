@@ -5,10 +5,7 @@ import com.pragmaxim.pass.KeyRing.GpgId
 import com.pragmaxim.pass.RSA.{PassPath, PassPhrase, Password}
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.openpgp.{PGPPrivateKey, PGPPublicKey}
-import org.eclipse.jgit.api.CommitCommand
-import org.eclipse.jgit.gpg.bc.internal.BouncyCastleGpgSigner
-import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
-import zio.{IO, ZIO}
+import zio.ZIO
 
 import java.io.*
 import java.security.Security

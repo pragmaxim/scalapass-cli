@@ -2,10 +2,10 @@ package com.pragmaxim.pass
 
 import com.pragmaxim.pass.PassService.{PassFolder, PassName}
 import com.pragmaxim.pass.RSA.{PassPath, Password}
-import zio.{Chunk, IO, Task, UIO, URIO, ZIO, ZLayer}
+import zio.Console.printLine
+import zio.{Chunk, ZIO, ZLayer}
 
 import java.nio.file.Path as JPath
-import zio.Console.printLine
 
 case class PassService(gitService: GitLike, rsa: RSA, passwordReader: SecretReader, clipboard: Clipboard):
 
@@ -14,25 +14,28 @@ case class PassService(gitService: GitLike, rsa: RSA, passwordReader: SecretRead
       ctx    <- ZIO.service[PassCtx]
       git    <- ZIO.service[GitLike]
       rsa    <- ZIO.service[RSA]
-      status <- ZIO.collectAll(List(git.status, rsa.status, ZIO.succeed(ctx.toString)))
-      _      <- printLine(status.mkString("\n")).ignore
+      status <- ZIO.collectAll(List(rsa.status, ZIO.succeed(ctx.toString), git.status))
+      _      <- printLine(s"Initialized with ${status.mkString("\n")}").ignore
     yield ()
 
   def insert(forced: Boolean, passName: PassName): ZIO[PassCtx, PassError, Unit] = {
-    def createFile(passPath: PassPath): Task[PassPath] =
+    def createFile(passPath: PassPath): ZIO[Any, UserError, PassPath] =
       if (forced && passPath.toFile.exists())
-        printLine(s"Replacing password $passPath") *> ZIO
+        ZIO
           .attempt(passPath.toFile.delete() && passPath.toFile.createNewFile())
-          .as(passPath)
+          .mapBoth(er => UserError(s"Unable to insert password under $passName", er), _ => passPath)
+      else if (passPath.toFile.exists())
+        ZIO.fail(UserError(s"Password $passName already exists"))
       else
-        printLine(s"Creating new password $passPath") *> ZIO
+        ZIO
           .attempt(passPath.getParent.toFile.mkdirs())
           .as(passPath)
+          .orDie
 
     for
       ctx          <- ZIO.service[PassCtx]
       password     <- passwordReader.readPassword()
-      fullPassPath <- createFile(ctx.passDir.fullPasswordPath(passName)).mapError(er => UserError(s"Unable to insert password under $passName", er))
+      fullPassPath <- createFile(ctx.passDir.fullPasswordPath(passName))
       _            <- rsa.encrypt(fullPassPath, password)
       _            <- gitService.commitFile(s"Inserting password $passName", signCommit = true, ctx.passDir.relativePasswordPath(passName))
       _            <- printLine(s"Password $passName inserted").ignore
@@ -66,6 +69,7 @@ case class PassService(gitService: GitLike, rsa: RSA, passwordReader: SecretRead
 
 object PassService:
   import zio.Chunk
+
   import java.io.File
 
   type PassName   = JPath

@@ -3,7 +3,7 @@ package com.pragmaxim.pass
 import com.pragmaxim.pass.KeyRing.GpgId
 import com.pragmaxim.pass.RSA.{PassPath, Password}
 import com.pragmaxim.pass.asymetric.{BouncyCastleRSA, GnuPgRSA, PgPainlessRSA}
-import zio.{IO, Task, UIO, ZIO, ZLayer}
+import zio.{Task, UIO, ZIO, ZLayer}
 
 import java.nio.file.Path as JPath
 

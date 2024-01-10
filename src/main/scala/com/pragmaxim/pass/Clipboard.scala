@@ -1,6 +1,6 @@
 package com.pragmaxim.pass
 
-import zio.{IO, Task, ULayer, ZIO, ZLayer}
+import zio.{Task, ULayer, ZIO, ZLayer}
 
 import scala.sys.process.*
 

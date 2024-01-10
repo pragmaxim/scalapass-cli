@@ -1,6 +1,7 @@
 package com.pragmaxim.pass.git
 
 import com.pragmaxim.pass.*
+import com.pragmaxim.pass.git.SystemGit.logger
 import zio.*
 
 import java.nio.file.Path as JPath
@@ -18,20 +19,21 @@ case class SystemGit(keyRing: KeyRing) extends GitLike:
     for
       ctx <- ZIO.service[PassCtx]
       _ <- ZIO
-             .foreachDiscard(paths)(path => ZIO.attempt(s"${ctx.gitExe} -C ${ctx.passDir} add $path".!!))
+             .foreachDiscard(paths)(path => ZIO.attempt(s"${ctx.gitExe} -C ${ctx.passDir} add $path" !! logger))
              .mapError(er => GitError(s"Git add failed", er))
       signed        = if signCommit then "-S" else ""
       commitCommand = s"${ctx.gitExe} -C ${ctx.passDir} commit $signed --gpg-sign=${keyRing.gpgId} -m \"$message\""
-      _ <- zio.Console.printLine(commitCommand).orDie
-      _ <- ZIO.attempt(commitCommand.!!).mapError(er => GitError(s"Git commit failed", er))
+      _ <- ZIO.attempt(commitCommand !! logger).mapError(er => GitError(s"Git commit failed", er))
     yield ()
 
 object SystemGit:
+  private val logger = ProcessLogger(out => (), err => ())
+
   private def initRepo(passHomeDir: PassHomeDir) =
     for
       ctx <- ZIO.service[PassCtx]
       gitCommand = s"${ctx.gitExe} -C $passHomeDir init"
-      _ <- ZIO.attempt(gitCommand.!!).mapError(er => GitError(s"Git init failed", er))
+      _ <- ZIO.attempt(gitCommand !! logger).mapError(er => GitError(s"Git init failed", er))
     yield ()
 
   def initGitService(): ZIO[PassCtx & KeyRing, GitError, GitLike] =
