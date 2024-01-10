@@ -27,13 +27,12 @@ object Cli {
       "init",
       Options.boolean("debug") ++ pgpTypeOptions ++ gitTypeOptions,
       Args.text("gpg-id")
-    )
-      .withHelp(HelpDoc.p("Init subcommand description"))
+    ).withHelp(HelpDoc.p("Initialize store with git and pgp implementation types"))
       .map { case ((debug, pgpType, gitType), gpgId) => Subcommand.Init(gpgId, pgpType, gitType, debug) }
 
   private val insert =
     Command("insert", Options.boolean("debug") ++ Options.boolean("f"), Args.directory("pass-name"))
-      .withHelp(HelpDoc.p("Insert subcommand description"))
+      .withHelp(HelpDoc.p("Insert password in a folder format, eg. web/google.com/foo@gmail.com"))
       .map { case ((debug, forced), passName) => Subcommand.Insert(forced, passName, debug) }
 
   private val show =
