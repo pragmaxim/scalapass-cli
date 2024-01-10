@@ -2,16 +2,13 @@ package com.pragmaxim.pass.asymetric
 
 import com.pragmaxim.pass.KeyRing.GpgId
 import com.pragmaxim.pass.RSA.{PassPath, Password}
-import com.pragmaxim.pass.{PgpError, PassCtx, RSA}
-import org.eclipse.jgit.api.CommitCommand
+import com.pragmaxim.pass.{PassCtx, PgpError, RSA}
 import zio.Console.printLine
-import zio.{IO, ZIO}
+import zio.ZIO
 
 import scala.sys.process.*
 
 case class GnuPgRSA(gpgId: GpgId) extends RSA:
-  override def sign(cmd: CommitCommand): IO[PgpError, CommitCommand] =
-    ZIO.attempt(cmd.setSigningKey(gpgId)).mapError(er => PgpError(s"Unable to sign git commit", er))
 
   override def encrypt(passPath: PassPath, password: Password): ZIO[PassCtx, PgpError, Unit] =
     for

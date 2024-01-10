@@ -32,18 +32,6 @@ case class PgPainlessRSA(keyRing: KeyRing, passwordReader: SecretReader) extends
                      .mapError(er => PgpError(s"Unable to decrypt $passPath", er))
     yield plaintext
 
-  override def sign(cmd: CommitCommand): IO[PgpError, CommitCommand] =
-    for
-      passphrase <- passwordReader.readPassphrase()
-      result <- ZIO
-                  .attempt(
-                    cmd
-                      .setCredentialsProvider(new UsernamePasswordCredentialsProvider(keyRing.gpgId, passphrase))
-                      .setGpgSigner(new BouncyCastleGpgSigner)
-                  )
-                  .mapError(er => PgpError(s"Unable to sign commit", er))
-    yield result
-
 object PgPainlessRSA extends PGPainlessSupport:
   def init(keyRing: KeyRing, secretReader: SecretReader): Task[PgPainlessRSA] =
     ZIO.attempt {

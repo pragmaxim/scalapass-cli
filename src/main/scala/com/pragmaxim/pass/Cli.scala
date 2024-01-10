@@ -1,5 +1,6 @@
 package com.pragmaxim.pass
 
+import com.pragmaxim.pass.GitLike.GitType
 import com.pragmaxim.pass.KeyRing.GpgId
 import com.pragmaxim.pass.PassService.{PassFolder, PassName}
 import com.pragmaxim.pass.RSA.PgpType
@@ -12,20 +13,23 @@ object Cli {
   sealed trait Subcommand extends Product with Serializable
   object Subcommand {
     final case class Insert(forced: Boolean, passName: PassName, debug: Boolean) extends Subcommand
-    final case class Init(gpgId: GpgId, pgpType: PgpType, debug: Boolean) extends Subcommand
+    final case class Init(gpgId: GpgId, pgpType: PgpType, gitType: GitType, debug: Boolean) extends Subcommand
     final case class Show(passName: PassName, debug: Boolean) extends Subcommand
     final case class Copy(passName: PassName, debug: Boolean) extends Subcommand
     final case class List(folder: PassFolder, debug: Boolean) extends Subcommand
   }
 
+  private val pgpTypeOptions = Options.enumeration("pgp-type")(PgpType.values.map(e => e.value -> e).toSeq: _*).withDefault(PgpType.gnupg)
+  private val gitTypeOptions = Options.enumeration("git-type")(GitType.values.map(e => e.value -> e).toSeq: _*).withDefault(GitType.git)
+
   private val init =
     Command(
       "init",
-      Options.boolean("debug") ++ Options.enumeration("pgp-type")(PgpType.values.map(e => e.value -> e).toSeq: _*).withDefault(PgpType.gnupg),
+      Options.boolean("debug") ++ pgpTypeOptions ++ gitTypeOptions,
       Args.text("gpg-id")
     )
       .withHelp(HelpDoc.p("Init subcommand description"))
-      .map { case ((debug, pgpType), gpgId) => Subcommand.Init(gpgId, pgpType, debug) }
+      .map { case ((debug, pgpType, gitType), gpgId) => Subcommand.Init(gpgId, pgpType, gitType, debug) }
 
   private val insert =
     Command("insert", Options.boolean("debug") ++ Options.boolean("f"), Args.directory("pass-name"))
@@ -53,6 +57,6 @@ object Cli {
       .map(debug => Subcommand.List(JPath.of("."), debug))
 
   val pass: Command[Subcommand] =
-    Command("pass", Options.none, Args.none).subcommands(init, insert, show, copy, ls, tree)
+    Command("scalapass-cli", Options.none, Args.none).subcommands(init, insert, show, copy, ls, tree)
 
 }

@@ -1,7 +1,9 @@
 package com.pragmaxim.pass
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, InputStream, OutputStream}
+import zio.ZIO
 
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream, InputStream, OutputStream}
+import java.nio.file.Path as JPath
 
 object IOUtils {
   def writeStringToOutput(input: String, out: OutputStream): Unit = {
@@ -36,4 +38,13 @@ object IOUtils {
       inputStream.close()
     }
   }
+
+  def writeToFile(file: JPath, content: String): ZIO[PassCtx & GitLike, PassError, Unit] =
+    for
+      ctx <- ZIO.service[PassCtx]
+      git <- ZIO.service[GitLike]
+      passDir = ctx.passDir
+      _ <- ZIO.writeFile(file, content).mapError(er => SystemError(s"Writing $content to $file failed", er))
+      _ <- git.commitFile(s"Adding $file", signCommit = false, passDir.relativize(file))
+    yield ()
 }

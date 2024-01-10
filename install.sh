@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-# This is the zio-cli launcher template. Distribute this file in a Git
+# This is modified zio-cli launcher template. Distribute this file in a Git
 # repository to make it easier for users to run your zio-cli app. You will need
 # to replace `APP_NAME`, `VERSION` and `DOWNLOAD_URL`. downloadUrl is expected
 # to be standalone jar file.
@@ -24,6 +24,7 @@ javaVersion="${GRAALVM_JAVA_VERSION:-java8}"
 
 xdgHome="$(pwd)"
 appDir="${xdgHome}/bin"
+completionFile="${appDir}/completion-script.sh"
 binName="${appDir}/${appName}"                     # native executable
 versionedBin="${binName}_${version}"               # native executable + version
 versionedJar="${versionedBin}.jar"                 # downloaded JAR
@@ -65,6 +66,12 @@ ensureAppJar() {
 	fi
 }
 
+addCompletionScript() {
+  "${versionedBin}" --shell-completion-script $(which "${versionedBin}") --shell-type bash > "${completionFile}"
+  . "${completionFile}"
+  success completion
+}
+
 ensureCli() {
 	ensureAppJar
 
@@ -78,6 +85,8 @@ ensureCli() {
 		if command -v native-image >/dev/null; then
 			buildNativeImage
 		fi
+
+		addCompletionScript
 	fi
 }
 
@@ -109,6 +118,7 @@ success() {
 	graalvm-native-image) printf "GraalVM native-image successfully installed!" ;;
 	native-image) printf "Built native image for %s." "${appName}" ;;
 	jar) printf "Downloaded %s" "${appName}" ;;
+	completion) printf "Completion installed %s, export PATH=.:$PATH to activate it" "${completionFile}" ;;
 	esac
 	printf "\033[0m\n"
 }

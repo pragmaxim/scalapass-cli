@@ -18,13 +18,15 @@ object PassHomeDir:
   extension (d: PassHomeDir)
     def toFile: File                   = d.toFile
     def gpgIdPath: GpgIdPath           = d.resolve(".gpg-id")
-    def gpgIdPathRelative: GpgIdPath   = d.relativize(gpgIdPath)
     def pgpTypePath: GpgIdPath         = d.resolve(".pgp-type")
-    def pgpTypePathRelative: GpgIdPath = d.relativize(pgpTypePath)
+    def gitTypePath: GpgIdPath         = d.resolve(".git-type")
+    def relativize(p: JPath)           = d.relativize(p)
     def gitInitialized: Boolean        = d.resolve(".git").toFile.exists()
     def resolveDir(path: JPath): JPath = d.resolve(path)
     def fullPasswordPath(passwordPath: PassName): PassPath =
       d.resolve(passwordPath).resolveSibling(passwordPath.toFile.getName + ".gpg")
+    def relativePasswordPath(passwordPath: PassName): PassPath =
+      passwordPath.resolveSibling(passwordPath.toFile.getName + ".gpg")
 
 opaque type GpgExe = String
 object GpgExe:
@@ -33,7 +35,15 @@ object GpgExe:
 
   extension (ge: GpgExe) def trim: String = ge.trim
 
-case class PassCtx(passDir: PassHomeDir, gpgExe: GpgExe) {
+opaque type GitExe = String
+object GitExe:
+  val PASS_GIT_PATH_ENV = "PASS_GIT_PATH"
+
+  def apply(): GitExe = sys.env.getOrElse(PASS_GIT_PATH_ENV, "git").trim
+
+  extension (ge: GitExe) def trim: String = ge.trim
+
+case class PassCtx(passDir: PassHomeDir, gpgExe: GpgExe, gitExe: GitExe) {
   override def toString: String = s"context($passDir, $gpgExe)"
 }
 
@@ -41,7 +51,7 @@ object PassCtx:
   type GpgIdPath = JPath
 
   val defaultEnv: ULayer[PassCtx] =
-    ZLayer.succeed(PassCtx(PassHomeDir(), GpgExe()))
+    ZLayer.succeed(PassCtx(PassHomeDir(), GpgExe(), GitExe()))
 
-  def env(passDir: PassHomeDir, gpgExe: GpgExe): ULayer[PassCtx] =
-    ZLayer.succeed(PassCtx(passDir, gpgExe))
+  def env(passDir: PassHomeDir, gpgExe: GpgExe, gitExe: GitExe): ULayer[PassCtx] =
+    ZLayer.succeed(PassCtx(passDir, gpgExe, gitExe))

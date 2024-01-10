@@ -47,18 +47,6 @@ case class BouncyCastleRSA(keyRing: KeyRing, passwordReader: SecretReader) exten
       password         <- ZIO.fromOption(passwordOpt).orElseFail(PgpError(s"Unable to find literal data"))
     yield password
 
-  override def sign(cmd: CommitCommand): IO[PgpError, CommitCommand] =
-    for
-      passphrase <- passwordReader.readPassphrase()
-      result <- ZIO
-                  .attempt(
-                    cmd
-                      .setCredentialsProvider(new UsernamePasswordCredentialsProvider(keyRing.gpgId, passphrase))
-                      .setGpgSigner(new BouncyCastleGpgSigner)
-                  )
-                  .mapError(e => PgpError(s"Unable to sign git commit", e))
-    yield result
-
 }
 
 object BouncyCastleRSA:

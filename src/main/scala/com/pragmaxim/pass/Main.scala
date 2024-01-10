@@ -16,13 +16,14 @@ object Main extends ZIOCliDefault with Layers {
       strong(s"Do not use with real passwords, it is just experimental!\n"),
       text(s"To change default directory : ${PassHomeDir.defaultPassDir}, set ${PassHomeDir.PASS_HOME_PATH_ENV} env variable\n"),
       text(s"Either have `gpg` executable on your PATH or set full path with ${GpgExe.PASS_GNUPG_PATH_ENV} env variable\n"),
+      text(s"Either have `git` executable on your PATH or set full path with ${GitExe.PASS_GIT_PATH_ENV} env variable\n"),
       text(s"You need xsel installed to copy password to clipboard\n")
     ),
     command = Cli.pass
   ) {
-    case Subcommand.Init(gpgId, pgpType, debug) =>
+    case Subcommand.Init(gpgId, pgpType, gitType, debug) =>
       PassService.printStatus
-        .provide(baseLayer >+> initLayer(gpgId, pgpType))
+        .provide(baseLayer >+> initLayer(gpgId, pgpType, gitType))
         .debugOrFail(debug)
     case Subcommand.Insert(forced, passName, debug) =>
       PassService

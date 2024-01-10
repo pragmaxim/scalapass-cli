@@ -1,10 +1,12 @@
 package com.pragmaxim.pass
 
 import com.pragmaxim.pass.KeyRing.{GpgId, SecretValue}
-import com.pragmaxim.pass.RSA.{PassPhrase, PgpType}
-import zio.{RLayer, ZIO, ZLayer}
+import com.pragmaxim.pass.RSA.PassPhrase
+import zio.{ZIO, ZLayer}
 
+import java.nio.file.Path as JPath
 import scala.io.Source
+import scala.util.Random
 
 trait TestLayers {
 
@@ -34,10 +36,9 @@ trait TestLayers {
     }
   )
 
-  val openLayer: RLayer[PassCtx & GitSession & SecretReader & Clipboard, KeyRing & RSA & PassService] =
-    keyRingLayer >+> RSA.open >+> PassService.layer
+  private def passTempDir = PassHomeDir.overriden(JPath.of(System.getProperty("java.io.tmpdir"), ".scalapass", Random.alphanumeric.take(10).mkString))
 
-  def initLayer(pgpType: PgpType): RLayer[PassCtx & GitSession & SecretReader & Clipboard, KeyRing & RSA & PassService] =
-    keyRingLayer >+> RSA.init(pgpType) >+> PassService.layer
+  def baseLayer: ZLayer[SecretReader & Clipboard, PassError, PassCtx & KeyRing] =
+    PassCtx.env(passTempDir, GpgExe(), GitExe()) >+> keyRingLayer
 
 }

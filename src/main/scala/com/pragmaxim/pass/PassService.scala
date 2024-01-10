@@ -7,12 +7,12 @@ import zio.{Chunk, IO, Task, UIO, URIO, ZIO, ZLayer}
 import java.nio.file.Path as JPath
 import zio.Console.printLine
 
-case class PassService(gitService: GitSession, rsa: RSA, passwordReader: SecretReader, clipboard: Clipboard):
+case class PassService(gitService: GitLike, rsa: RSA, passwordReader: SecretReader, clipboard: Clipboard):
 
-  def printStatus: URIO[PassCtx & GitSession & RSA, Unit] =
+  def printStatus: ZIO[PassCtx & RSA & GitLike, GitError, Unit] =
     for
       ctx    <- ZIO.service[PassCtx]
-      git    <- ZIO.service[GitSession]
+      git    <- ZIO.service[GitLike]
       rsa    <- ZIO.service[RSA]
       status <- ZIO.collectAll(List(git.status, rsa.status, ZIO.succeed(ctx.toString)))
       _      <- printLine(status.mkString("\n")).ignore
@@ -34,7 +34,7 @@ case class PassService(gitService: GitSession, rsa: RSA, passwordReader: SecretR
       password     <- passwordReader.readPassword()
       fullPassPath <- createFile(ctx.passDir.fullPasswordPath(passName)).mapError(er => UserError(s"Unable to insert password under $passName", er))
       _            <- rsa.encrypt(fullPassPath, password)
-      _            <- gitService.commitFileAndSign(s"Inserting password $passName", passName)(rsa.sign)
+      _            <- gitService.commitFile(s"Inserting password $passName", signCommit = true, ctx.passDir.relativePasswordPath(passName))
       _            <- printLine(s"Password $passName inserted").ignore
     yield ()
   }
@@ -92,7 +92,7 @@ object PassService:
     else
       lines
 
-  def printStatus: URIO[PassService & PassCtx & GitSession & RSA, Unit] =
+  def printStatus: ZIO[PassService & PassCtx & RSA & GitLike, GitError, Unit] =
     ZIO.serviceWithZIO[PassService](_.printStatus)
 
   def insert(forced: Boolean, passName: PassName): ZIO[PassService & PassCtx, PassError, Unit] =
@@ -107,4 +107,4 @@ object PassService:
   def list(subFolder: PassFolder): ZIO[PassService & PassCtx, PassError, Chunk[String]] =
     ZIO.serviceWithZIO[PassService](_.list(subFolder))
 
-  def layer: ZLayer[GitSession & RSA & SecretReader & Clipboard, GitError, PassService] = ZLayer.derive[PassService]
+  def layer: ZLayer[GitLike & RSA & SecretReader & Clipboard, GitError, PassService] = ZLayer.derive[PassService]

@@ -3,7 +3,7 @@ package com.pragmaxim.pass
 import com.pragmaxim.pass.KeyRing.*
 import com.pragmaxim.pass.RSA.PassPhrase
 import com.pragmaxim.pass.asymetric.BouncyCastleSupport
-import zio.{TaskLayer, ZIO, ZLayer}
+import zio.{TaskLayer, ULayer, ZIO, ZLayer}
 
 import scala.sys.process.*
 
@@ -40,7 +40,7 @@ case class GnuPGKeyRing(gpgId: GpgId) extends KeyRing with BouncyCastleSupport:
 
 object GnuPGKeyRing:
 
-  def init(gpgId: GpgId): TaskLayer[KeyRing] = ZLayer.succeed(GnuPGKeyRing(gpgId))
+  def init(gpgId: GpgId): ULayer[KeyRing] = ZLayer.succeed(GnuPGKeyRing(gpgId))
 
   def open: ZLayer[PassCtx, PassError, KeyRing] =
     ZLayer {
