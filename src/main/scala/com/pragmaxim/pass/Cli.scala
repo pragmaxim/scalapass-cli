@@ -56,6 +56,6 @@ object Cli {
       .map(debug => Subcommand.List(JPath.of("."), debug))
 
   val pass: Command[Subcommand] =
-    Command("scalapass-cli", Options.none, Args.none).subcommands(init, insert, show, copy, ls, tree)
+    Command("zio-pass", Options.none, Args.none).subcommands(init, insert, show, copy, ls, tree)
 
 }

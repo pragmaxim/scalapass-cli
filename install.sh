@@ -14,7 +14,7 @@
 
 set -e
 
-appName="scalapass-cli"
+appName="zio-pass"
 version="3-0.1.0-SNAPSHOT"
 downloadUrl="DOWNLOAD_URL"
 

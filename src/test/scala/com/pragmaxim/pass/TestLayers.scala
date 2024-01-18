@@ -36,7 +36,7 @@ trait TestLayers {
     }
   )
 
-  private def passTempDir = PassHomeDir.overriden(JPath.of(System.getProperty("java.io.tmpdir"), ".scalapass", Random.alphanumeric.take(10).mkString))
+  private def passTempDir = PassHomeDir.overriden(JPath.of(System.getProperty("java.io.tmpdir"), ".zio-pass", Random.alphanumeric.take(10).mkString))
 
   def baseLayer: ZLayer[SecretReader & Clipboard, PassError, PassCtx & KeyRing] =
     PassCtx.env(passTempDir, GpgExe(), GitExe()) >+> keyRingLayer

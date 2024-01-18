@@ -11,7 +11,7 @@ import java.nio.file.Path as JPath
 opaque type PassHomeDir = JPath
 object PassHomeDir:
   val PASS_HOME_PATH_ENV                     = "PASS_HOME_PATH"
-  val defaultPassDir: PassHomeDir            = JPath.of(System.getProperty("user.home"), ".scalapass")
+  val defaultPassDir: PassHomeDir            = JPath.of(System.getProperty("user.home"), ".zio-pass")
   def apply(): PassHomeDir                   = sys.env.get(PASS_HOME_PATH_ENV).map(JPath.of(_)).getOrElse(defaultPassDir)
   def overriden(passDir: JPath): PassHomeDir = passDir
 

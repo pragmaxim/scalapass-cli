@@ -1,4 +1,4 @@
-## Scalapass CLI
+## ZIO pass
 
 This is a password-store implementation demonstrating zio-cli in action. It can be initialized with different backends
 for encryption/decryption/signing (BouncyCastle, GnuPG, PgPainless) and version control (Git, JGit).
@@ -13,7 +13,7 @@ a very fast GraalVM based native image and a completion-script.
 cd bin
 export PATH=.:$PATH
 
-scalapass-cli
+zio-pass
 ```
 
 ```

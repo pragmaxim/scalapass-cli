@@ -12,7 +12,7 @@ lazy val root = (project in file("."))
     }
   )
   .settings(
-    name := "scalapass-cli",
+    name := "zio-pass",
     libraryDependencies ++= Seq(
       "dev.zio"           %% "zio"                      % "2.0.21",
       "dev.zio"           %% "zio-cli"                  % "0.5.0",
